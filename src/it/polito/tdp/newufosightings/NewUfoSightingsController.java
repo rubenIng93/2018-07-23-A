@@ -5,9 +5,13 @@
 package it.polito.tdp.newufosightings;
 
 import java.net.URL;
+import java.time.Duration;
+import java.time.Year;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.newufosightings.model.Model;
+import it.polito.tdp.newufosightings.model.Simulatore;
+import it.polito.tdp.newufosightings.model.State;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -51,16 +55,55 @@ public class NewUfoSightingsController {
 
 	@FXML
 	void doCreaGrafo(ActionEvent event) {
+		
+		if(cmbBoxForma.getValue() == null) {
+			txtResult.appendText("Selezionare una forma per procedere");
+			return;
+		}
+		
+		String forma = cmbBoxForma.getValue();
+		Year anno = Year.of(Integer.parseInt(txtAnno.getText()));
+		
+		model.creaGrafo(anno, forma);
+		
+		for(State s : model.getGrafo().vertexSet()) {
+			txtResult.appendText(s + " - Peso archi adiacenti: "+ model.pesoArchiAdiacenti(s)+"\n");
+		}
 
 	}
 
 	@FXML
 	void doSelezionaAnno(ActionEvent event) {
-
+		
+		txtResult.clear();
+		if(txtAnno.getText().equals("")) {
+			txtResult.appendText("Devi immettere un anno!!");
+			return;
+		}
+		Year anno = Year.of(Integer.parseInt(txtAnno.getText()));
+		
+		
+		cmbBoxForma.getItems().addAll(model.getShapesByYear(anno));
+	
 	}
 
 	@FXML
 	void doSimula(ActionEvent event) {
+		
+		txtResult.clear();
+		String forma = cmbBoxForma.getValue();
+		Year anno = Year.of(Integer.parseInt(txtAnno.getText()));
+		Integer prob = Integer.parseInt(txtAlfa.getText()) ;
+		Duration t1 = Duration.ofDays(Integer.parseInt(txtT1.getText())) ; 
+		
+		Simulatore sim = new Simulatore();
+		
+		sim.init(anno, forma, prob, t1);
+		sim.run();
+		
+		for(State s : sim.getIdMap().values()) {
+			txtResult.appendText("Stato: " + s + " DEFCON = "+s.getDefcon() + "\n");
+		}
 
 	}
 
